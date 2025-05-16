@@ -9,7 +9,7 @@ interface TodoCardProps {
   onDragEnd: () => void;
   onDelete: () => void;
   onUpdateTags: (todoId: string, tag: string) => void;
-  onUpdateText: (todoId: string, newText: string) => void; // Add this prop
+  onUpdateText: (todoId: string, newText: string) => void;
   availableTags: string[];
   onEditTag: (oldText: string, newText: string) => void;
 }
@@ -20,7 +20,7 @@ const TodoCard: React.FC<TodoCardProps> = ({
   onDragEnd,
   onDelete,
   onUpdateTags,
-  onUpdateText, // Add this prop
+  onUpdateText,
   availableTags,
   onEditTag,
 }) => {
@@ -143,10 +143,12 @@ const TodoCard: React.FC<TodoCardProps> = ({
         </button>
       </div>
 
-      {/* Rest of the component */}
       {/* Tags display */}
       {todo.tags.length > 0 && !showTagSelector && (
-        <div className="flex flex-wrap gap-1 ml-8 mt-1">
+        <div
+          onDoubleClick={() => setShowTagSelector(true)}
+          className="flex flex-wrap gap-1 ml-8 mt-1"
+        >
           {todo.tags.map((tag) => (
             <span
               key={tag}

@@ -78,6 +78,7 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
               onUpdateTags={onUpdateTags}
               onUpdateText={onUpdateText}
               availableTags={availableTags}
+              onEditTag={onEditTag}
             />
 
             {/* Drop area after each item */}

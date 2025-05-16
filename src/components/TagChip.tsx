@@ -7,7 +7,7 @@ interface TagChipProps {
   isAddButton?: boolean;
   onClick: () => void;
   onDelete?: () => void;
-  onEdit?: (oldText: string, newText: string) => void; // New prop for editing
+  onEdit?: (oldText: string, newText: string) => void;
 }
 
 const TagChip: React.FC<TagChipProps> = ({
@@ -32,14 +32,15 @@ const TagChip: React.FC<TagChipProps> = ({
   }, [isEditing]);
 
   const handleSave = () => {
-    if (editText.trim() === "") {
+    const updatedEditText = editText.trim();
+    if (updatedEditText === "") {
       setEditText(text); // Revert to original
       setIsEditing(false);
       return;
     }
 
-    if (editText !== text && onEdit) {
-      onEdit(text, editText.trim());
+    if (updatedEditText !== text && onEdit) {
+      onEdit(text, updatedEditText);
     }
 
     setIsEditing(false);
@@ -52,7 +53,7 @@ const TagChip: React.FC<TagChipProps> = ({
         className="flex items-center bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded-full text-sm transition-colors cursor-pointer"
       >
         <PlusIcon className="h-4 w-4 mr-1" />
-        <span>{text}</span>
+        <span className="mr-2">{text}</span>
       </button>
     );
   }
