@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import TodoColumn from "./components/TodoColumn";
 
-interface Todo {
-  id: number;
+type Status = "todo" | "doing" | "done";
+
+export interface Todo {
+  id: string;
   text: string;
-  status: "todo" | "doing" | "done";
+  status: Status;
 }
 
 function App() {
@@ -30,7 +32,7 @@ function App() {
     if (input.trim() === "") return;
 
     const newTodo: Todo = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       text: input.trim(),
       status: "todo",
     };
@@ -40,12 +42,12 @@ function App() {
   };
 
   // Delete todo
-  const deleteTodo = (id: number) => {
+  const deleteTodo = (id: string) => {
     setTodos(todos.filter((todo) => todo.id !== id));
   };
 
   // Handle drag and drop between columns
-  const handleDragStart = (todoId: number) => {
+  const handleDragStart = (todoId: string) => {
     const todoIndex = todos.findIndex((todo) => todo.id === todoId);
     setActiveCard(todoIndex);
   };
@@ -57,40 +59,35 @@ function App() {
   const handleDrop = (targetColumnId: string, targetIndex: number) => {
     if (activeCard === null) return;
 
-    const activeTodo = todos[activeCard];
+    // Remove the item from its original position
+    const updatedTodos = [...todos]; // we don't mutate directly the state
+    const [activeTodo] = updatedTodos.splice(activeCard, 1);
 
-    // Skip if dropping in the same position or right after itself in the same column
+    // If the todo is dropped in the same column
     if (activeTodo.status === targetColumnId) {
-      const sameColumnTodos = todos.filter((t) => t.status === targetColumnId);
-      const sameColumnIndex = sameColumnTodos.findIndex(
-        (t) => t.id === activeTodo.id
-      );
+      const currentTodoIndex = todosByStatus[
+        targetColumnId as Status
+      ].findIndex((t) => t.id === activeTodo.id);
 
       // If dropping in same position or right after itself, do nothing
       if (
-        sameColumnIndex === targetIndex ||
-        sameColumnIndex === targetIndex - 1
+        currentTodoIndex === targetIndex ||
+        currentTodoIndex === targetIndex - 1
       ) {
         setActiveCard(null);
         return;
       }
 
-      // When moving within the same column, adjust target index if it's after the source
-      if (sameColumnIndex < targetIndex) {
-        // Decrement target index because the item's removal shifts indices down
+      // Decrement target index because the item's removal shifts indices down
+      if (currentTodoIndex < targetIndex) {
         targetIndex--;
       }
     }
 
-    const updatedTodos = [...todos];
-
-    // Remove the item from its original position
-    updatedTodos.splice(activeCard, 1);
-
     // Create the updated todo with possibly new status
     const newTodo = {
       ...activeTodo,
-      status: targetColumnId as "todo" | "doing" | "done",
+      status: targetColumnId as Status,
     };
 
     // Get todos in the target column after removal
@@ -110,7 +107,7 @@ function App() {
       }
     }
     // Insert at a specific position
-    else if (targetIndex <= targetColumnTodos.length) {
+    else if (targetIndex < targetColumnTodos.length) {
       // Find the todo that should appear before our dropped item
       const targetTodo = targetColumnTodos[targetIndex - 1];
       const insertAtIndex = updatedTodos.findIndex(
@@ -127,7 +124,7 @@ function App() {
     setActiveCard(null);
   };
 
-  // Filter todos by status
+  // Filter todos by status for easier to work with
   const todosByStatus = {
     todo: todos.filter((todo) => todo.status === "todo"),
     doing: todos.filter((todo) => todo.status === "doing"),

@@ -1,23 +1,17 @@
 import React from "react";
 import TodoCard from "./TodoCard";
 import DropArea from "./DropArea";
-
-interface Todo {
-  id: number;
-  text: string;
-  status: "todo" | "doing" | "done";
-  tags?: string[]; // Make tags optional to avoid any potential issues
-}
+import { Todo } from "../App";
 
 interface TodoColumnProps {
   columnId: string;
   todos: Todo[];
   title: string; // Add title prop to display column name
   activeCard: number | null;
-  onDragStart: (todoId: number) => void;
+  onDragStart: (todoId: string) => void;
   onDragEnd: () => void;
   onDrop: (columnId: string, index: number) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
 }
 
 const TodoColumn: React.FC<TodoColumnProps> = ({

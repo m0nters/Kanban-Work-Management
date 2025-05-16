@@ -1,11 +1,6 @@
 import React from "react";
 import { Bars3Icon, TrashIcon } from "@heroicons/react/16/solid";
-
-interface Todo {
-  id: number;
-  text: string;
-  status: "todo" | "doing" | "done";
-}
+import { Todo } from "../App";
 
 interface TodoCardProps {
   todo: Todo;
