@@ -10,8 +10,8 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 
 - 🧩 **Kanban Layout** — Organize tasks into "To Do", "In Progress", and "Done" columns
 - 🎯 **Drag and Drop** — Move tasks between columns using smooth drag-and-drop interactions
-- 📝 **Task Management** — Create, categorize, and delete tasks
-- 🏷️ **Tag System** — Create custom tags, assign them to tasks
+- 📝 **Task Management** — Create, modify, categorize, and delete tasks
+- 🏷️ **Tag System** — Create, modify custom tags, assign them to tasks
 - 💾 **Persistent Storage** — Tasks and tags are saved in `localStorage`
 - 📱 **Responsive Design** — Works on desktops, tablets, and smartphones
 - 🔍 **Visual Feedback** — Clear indicators when dragging tasks and selecting tags
@@ -59,14 +59,10 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 2. Select optional tags from the tag list
 3. Click **"Add"** — the task will appear under **To Do**
 
-### 🏷️ Managing Tags
+### ✒️ Editing a Task
 
-- **Create tags**: Click the "Add Tag" button to create custom tags
-- **Select tags**: Click on tags to toggle selection when creating tasks
-- **View tags**: See all assigned tags displayed directly on task cards
-- **Edit task tags**: Click the tag icon on any task to open the tag selector
-- **Toggle tags**: Click any tag in the selector to add/remove it from a task
-- **Remove tags**: Click the X icon on a tag to delete it from the entire system
+1. Double click on content of a task card
+2. Write your desired content and hit enter
 
 ### 🔄 Moving Tasks
 
@@ -76,6 +72,16 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 ### 🗑️ Deleting Tasks
 
 - Click the trash icon on the task card
+
+### 🏷️ Managing Tags
+
+- **Create tags**: Click the "Add Tag" button to create custom tags
+- **Select tags**: Click on tags to toggle selection when creating tasks
+- **View tags**: See all assigned tags displayed directly on task cards
+- **Edit task tags**: Click the tag icon on any task to open the tag selector
+- **Edit tag**: Double click the tag content and rewrite your desired one
+- **Toggle tags**: Click any tag in the selector to add/remove it from a task
+- **Remove tags**: Click the X icon on a tag to delete it from the entire system
 
 ---
 

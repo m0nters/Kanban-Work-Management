@@ -87,6 +87,43 @@ function App() {
     setSelectedTags([]);
   };
 
+  // Update todo card's text
+  const updateTodoText = (todoId: string, newText: string) => {
+    setTodos(
+      todos.map((todo) => {
+        if (todo.id === todoId) {
+          return { ...todo, text: newText };
+        }
+        return todo;
+      })
+    );
+  };
+
+  // Update tag text globally
+  const updateTagText = (oldText: string, newText: string) => {
+    // Check if the new tag name already exists
+    if (tags.includes(newText)) {
+      alert("This tag already exists!");
+      return;
+    }
+
+    // Update the tags array
+    setTags(tags.map((tag) => (tag === oldText ? newText : tag)));
+
+    // Update selectedTags array
+    setSelectedTags(
+      selectedTags.map((tag) => (tag === oldText ? newText : tag))
+    );
+
+    // Update all todos that have this tag
+    setTodos(
+      todos.map((todo) => ({
+        ...todo,
+        tags: todo.tags.map((tag) => (tag === oldText ? newText : tag)),
+      }))
+    );
+  };
+
   // Add new tag
   const handleAddTag = (e: React.FormEvent) => {
     e.preventDefault();
@@ -268,6 +305,7 @@ function App() {
                 isSelected={selectedTags.includes(tag)}
                 onClick={() => toggleTagSelection(tag)}
                 onDelete={() => deleteTag(tag)}
+                onEdit={updateTagText}
               />
             ))}
 
@@ -317,7 +355,9 @@ function App() {
             onDrop={handleDrop}
             onDelete={deleteTodo}
             onUpdateTags={updateTodoTags}
+            onUpdateText={updateTodoText}
             availableTags={tags}
+            onEditTag={updateTagText}
           />
         </div>
 
@@ -333,7 +373,9 @@ function App() {
             onDrop={handleDrop}
             onDelete={deleteTodo}
             onUpdateTags={updateTodoTags}
+            onUpdateText={updateTodoText}
             availableTags={tags}
+            onEditTag={updateTagText}
           />
         </div>
 
@@ -349,7 +391,9 @@ function App() {
             onDrop={handleDrop}
             onDelete={deleteTodo}
             onUpdateTags={updateTodoTags}
+            onUpdateText={updateTodoText}
             availableTags={tags}
+            onEditTag={updateTagText}
           />
         </div>
       </div>

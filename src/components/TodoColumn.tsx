@@ -13,7 +13,9 @@ interface TodoColumnProps {
   onDrop: (columnId: string, index: number) => void;
   onDelete: (id: string) => void;
   onUpdateTags: (todoId: string, tag: string) => void;
+  onUpdateText: (todoId: string, newText: string) => void;
   availableTags: string[];
+  onEditTag: (oldText: string, newText: string) => void;
 }
 
 const TodoColumn: React.FC<TodoColumnProps> = ({
@@ -26,7 +28,9 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
   onDrop,
   onDelete,
   onUpdateTags,
+  onUpdateText,
   availableTags,
+  onEditTag,
 }) => {
   // Get badge color based on column
   const getBadgeColor = () => {
@@ -72,6 +76,7 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
               onDragEnd={onDragEnd}
               onDelete={() => onDelete(todo.id)}
               onUpdateTags={onUpdateTags}
+              onUpdateText={onUpdateText}
               availableTags={availableTags}
             />
 
