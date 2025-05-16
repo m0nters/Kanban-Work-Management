@@ -1,33 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface DropAreaProps {
-  isVisible: boolean;
-  dragOver: boolean;
+  isVisible: boolean; // happens when a card is being dragged
   index: number;
-  onDragOver: (e: React.DragEvent) => void;
-  onDragLeave: () => void;
   onDrop: () => void;
 }
 
-const DropArea: React.FC<DropAreaProps> = ({
-  isVisible,
-  dragOver,
-  onDragOver,
-  onDragLeave,
-  onDrop,
-}) => {
+const DropArea: React.FC<DropAreaProps> = ({ isVisible, onDrop }) => {
+  const [dragOver, setDragOver] = useState(false);
+
   return (
     <div
       className={`w-full transition-all ${
         isVisible
-          ? "h-2 hover:h-12 my-1 rounded border border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50"
+          ? `my-2 rounded border border-dashed gray-500 ${
+              dragOver ? "h-12 border-blue-500 bg-blue-50" : "h-6 opacity-30"
+            } `
           : "h-0"
-      } ${dragOver ? "h-12 border-blue-500 bg-blue-50" : "opacity-60"}`}
+      }`}
       onDragOver={(e) => {
         e.preventDefault();
-        onDragOver(e);
+        setDragOver(true);
       }}
-      onDragLeave={onDragLeave}
+      onDragLeave={() => setDragOver(false)}
       onDrop={onDrop}
     ></div>
   );

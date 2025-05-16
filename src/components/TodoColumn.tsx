@@ -14,11 +14,8 @@ interface TodoColumnProps {
   todos: Todo[];
   title: string; // Add title prop to display column name
   activeCard: number | null;
-  dragOver: { columnId: string; index: number } | null;
   onDragStart: (todoId: number) => void;
   onDragEnd: () => void;
-  onDragOver: (e: React.DragEvent, columnId: string, index: number) => void;
-  onDragLeave: () => void;
   onDrop: (columnId: string, index: number) => void;
   onDelete: (id: number) => void;
 }
@@ -28,11 +25,8 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
   todos,
   title,
   activeCard,
-  dragOver,
   onDragStart,
   onDragEnd,
-  onDragOver,
-  onDragLeave,
   onDrop,
   onDelete,
 }) => {
@@ -65,10 +59,7 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
       {/* First drop area at top */}
       <DropArea
         isVisible={activeCard !== null}
-        dragOver={dragOver?.columnId === columnId && dragOver?.index === 0}
         index={0}
-        onDragOver={(e) => onDragOver(e, columnId, 0)}
-        onDragLeave={onDragLeave}
         onDrop={() => onDrop(columnId, 0)}
       />
 
@@ -81,18 +72,13 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
               todo={todo}
               onDragStart={() => onDragStart(todo.id)}
               onDragEnd={onDragEnd}
-              onDelete={onDelete}
+              onDelete={() => onDelete(todo.id)}
             />
 
             {/* Drop area after each item */}
             <DropArea
               isVisible={activeCard !== null}
-              dragOver={
-                dragOver?.columnId === columnId && dragOver?.index === index + 1
-              }
               index={index + 1}
-              onDragOver={(e) => onDragOver(e, columnId, index + 1)}
-              onDragLeave={onDragLeave}
               onDrop={() => onDrop(columnId, index + 1)}
             />
           </div>

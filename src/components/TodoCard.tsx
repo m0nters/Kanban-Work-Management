@@ -11,7 +11,7 @@ interface TodoCardProps {
   todo: Todo;
   onDragStart: () => void;
   onDragEnd: () => void;
-  onDelete: (id: number) => void;
+  onDelete: () => void;
 }
 
 const TodoCard: React.FC<TodoCardProps> = ({
@@ -24,11 +24,11 @@ const TodoCard: React.FC<TodoCardProps> = ({
   const getStatusColor = () => {
     switch (todo.status) {
       case "todo":
-        return "border-l-4 border-l-blue-500";
+        return "border-l-blue-500";
       case "doing":
-        return "border-l-4 border-l-yellow-500";
+        return "border-l-yellow-500";
       case "done":
-        return "border-l-4 border-l-green-500";
+        return "border-l-green-500";
       default:
         return "";
     }
@@ -39,7 +39,7 @@ const TodoCard: React.FC<TodoCardProps> = ({
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className={`flex items-center p-3 bg-white border rounded-md ${getStatusColor()} 
+      className={`flex items-center p-3 bg-white border rounded-md border-l-4 ${getStatusColor()} 
         cursor-move hover:shadow-md transition-all`}
     >
       {/* Hamburger icon */}
@@ -52,8 +52,8 @@ const TodoCard: React.FC<TodoCardProps> = ({
 
       {/* Delete button */}
       <button
-        onClick={() => onDelete(todo.id)}
-        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm transition-colors"
+        onClick={onDelete}
+        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm transition-colors cursor-pointer"
       >
         <TrashIcon className="h-5 w-5" />
       </button>
