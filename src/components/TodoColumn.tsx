@@ -6,12 +6,14 @@ import { Todo } from "../App";
 interface TodoColumnProps {
   columnId: string;
   todos: Todo[];
-  title: string; // Add title prop to display column name
+  title: string;
   activeCard: number | null;
   onDragStart: (todoId: string) => void;
   onDragEnd: () => void;
   onDrop: (columnId: string, index: number) => void;
   onDelete: (id: string) => void;
+  onUpdateTags: (todoId: string, tag: string) => void;
+  availableTags: string[];
 }
 
 const TodoColumn: React.FC<TodoColumnProps> = ({
@@ -23,6 +25,8 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
   onDragEnd,
   onDrop,
   onDelete,
+  onUpdateTags,
+  availableTags,
 }) => {
   // Get badge color based on column
   const getBadgeColor = () => {
@@ -67,6 +71,8 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
               onDragStart={() => onDragStart(todo.id)}
               onDragEnd={onDragEnd}
               onDelete={() => onDelete(todo.id)}
+              onUpdateTags={onUpdateTags}
+              availableTags={availableTags}
             />
 
             {/* Drop area after each item */}

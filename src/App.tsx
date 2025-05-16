@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TodoColumn from "./components/TodoColumn";
+import TagChip from "./components/TagChip";
 
 type Status = "todo" | "doing" | "done";
 
@@ -7,9 +8,11 @@ export interface Todo {
   id: string;
   text: string;
   status: Status;
+  tags: string[];
 }
 
 function App() {
+  // Load todos from localStorage
   const [todos, setTodos] = useState<Todo[]>(() => {
     const savedTodos = localStorage.getItem("todos");
     if (savedTodos) {
@@ -18,13 +21,54 @@ function App() {
     return [];
   });
 
-  const [input, setInput] = useState("");
-  const [activeCard, setActiveCard] = useState<number | null>(null);
+  // Load tags from localStorage
+  const [tags, setTags] = useState<string[]>(() => {
+    const savedTags = localStorage.getItem("tags");
+    if (savedTags) {
+      return JSON.parse(savedTags);
+    }
+    return [];
+  });
 
-  // Save todos to localStorage whenever they change
+  const [input, setInput] = useState("");
+  const [tagInput, setTagInput] = useState("");
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [activeCard, setActiveCard] = useState<number | null>(null);
+  const tagFormRef = useRef<HTMLFormElement>(null);
+
+  // Save todos and tags to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
+
+  useEffect(() => {
+    localStorage.setItem("tags", JSON.stringify(tags));
+  }, [tags]);
+
+  // Add a new effect to handle clicks outside the tag form
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        isAddingTag &&
+        tagFormRef.current &&
+        !tagFormRef.current.contains(event.target as Node)
+      ) {
+        setIsAddingTag(false);
+        setTagInput("");
+      }
+    }
+
+    // Add event listener when isAddingTag is true
+    if (isAddingTag) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Clean up the event listener
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isAddingTag]);
 
   // Add new todo
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,10 +79,68 @@ function App() {
       id: crypto.randomUUID(),
       text: input.trim(),
       status: "todo",
+      tags: [...selectedTags],
     };
 
     setTodos([...todos, newTodo]);
     setInput("");
+    setSelectedTags([]);
+  };
+
+  // Add new tag
+  const handleAddTag = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (tagInput.trim() === "") return;
+
+    // Only add if the tag doesn't already exist
+    if (!tags.includes(tagInput.trim())) {
+      setTags([...tags, tagInput.trim()]);
+    }
+
+    setTagInput("");
+    setIsAddingTag(false);
+  };
+
+  // Delete tag
+  const deleteTag = (tagToDelete: string) => {
+    // Remove tag from tags list
+    setTags(tags.filter((tag) => tag !== tagToDelete));
+
+    // Remove tag from selectedTags
+    setSelectedTags(selectedTags.filter((tag) => tag !== tagToDelete));
+
+    // Remove tag from all todos that have it
+    setTodos(
+      todos.map((todo) => ({
+        ...todo,
+        tags: todo.tags.filter((tag) => tag !== tagToDelete),
+      }))
+    );
+  };
+
+  // Toggle tag selection for new todo
+  const toggleTagSelection = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  // Update todo tags
+  const updateTodoTags = (todoId: string, tagToToggle: string) => {
+    setTodos(
+      todos.map((todo) => {
+        if (todo.id === todoId) {
+          const updatedTags = todo.tags.includes(tagToToggle)
+            ? todo.tags.filter((t) => t !== tagToToggle)
+            : [...todo.tags, tagToToggle];
+
+          return { ...todo, tags: updatedTags };
+        }
+        return todo;
+      })
+    );
   };
 
   // Delete todo
@@ -138,24 +240,71 @@ function App() {
       </h1>
 
       {/* Add todo form */}
-      <form onSubmit={handleSubmit} className="flex mb-6 max-w-lg mx-auto">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Add a new task..."
-          className="w-full p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          type="submit"
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-r-md transition-colors cursor-pointer"
-        >
-          Add
-        </button>
-      </form>
+      <div className="max-w-lg mx-auto mb-6">
+        <form onSubmit={handleSubmit} className="flex mb-3">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Add a new task..."
+            className="w-full p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-r-md transition-colors cursor-pointer"
+          >
+            Add
+          </button>
+        </form>
+
+        {/* Tag selection area */}
+        <div>
+          <div className="text-sm text-gray-600 mb-2">Select tags:</div>
+          <div className="flex flex-wrap gap-4 items-center">
+            {tags.map((tag) => (
+              <TagChip
+                key={tag}
+                text={tag}
+                isSelected={selectedTags.includes(tag)}
+                onClick={() => toggleTagSelection(tag)}
+                onDelete={() => deleteTag(tag)}
+              />
+            ))}
+
+            {isAddingTag ? (
+              <form
+                ref={tagFormRef}
+                onSubmit={handleAddTag}
+                className="flex items-center"
+              >
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  placeholder="New tag..."
+                  className="border border-gray-300 rounded-l-md p-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-2 py-1 text-sm rounded-r-md cursor-pointer"
+                >
+                  Add
+                </button>
+              </form>
+            ) : (
+              <TagChip
+                text="Add Tag"
+                isAddButton={true}
+                onClick={() => setIsAddingTag(true)}
+              />
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Kanban columns */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* To Do column */}
         <div className="bg-gray-100 rounded-md p-4">
           <TodoColumn
@@ -167,6 +316,8 @@ function App() {
             onDragEnd={handleDragEnd}
             onDrop={handleDrop}
             onDelete={deleteTodo}
+            onUpdateTags={updateTodoTags}
+            availableTags={tags}
           />
         </div>
 
@@ -181,6 +332,8 @@ function App() {
             onDragEnd={handleDragEnd}
             onDrop={handleDrop}
             onDelete={deleteTodo}
+            onUpdateTags={updateTodoTags}
+            availableTags={tags}
           />
         </div>
 
@@ -195,6 +348,8 @@ function App() {
             onDragEnd={handleDragEnd}
             onDrop={handleDrop}
             onDelete={deleteTodo}
+            onUpdateTags={updateTodoTags}
+            availableTags={tags}
           />
         </div>
       </div>
