@@ -1,5 +1,3 @@
-Here's a cleaned-up and rewritten version of your `README.md` that corrects the formatting issue ("Collecting workspace information") and improves clarity and flow:
-
 # Kanban Work Management
 
 A sleek and responsive Kanban board application built with **React**, **TypeScript**, and **TailwindCSS**. Easily manage your workflow across three columns: **To Do**, **In Progress**, and **Done**, with intuitive drag-and-drop functionality and persistent local storage.
@@ -13,8 +11,10 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 - 🧩 **Kanban Layout** — Organize tasks into "To Do", "In Progress", and "Done" columns
 - 🎯 **Drag and Drop** — Move tasks between columns using smooth drag-and-drop interactions
 - 📝 **Task Management** — Create, categorize, and delete tasks
+- 🏷️ **Tag System** — Create custom tags, assign them to tasks
 - 💾 **Persistent Storage** — Tasks and tags are saved in `localStorage`
 - 📱 **Responsive Design** — Works on desktops, tablets, and smartphones
+- 🔍 **Visual Feedback** — Clear indicators when dragging tasks and selecting tags
 
 ---
 
@@ -61,19 +61,17 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 
 ### 🏷️ Managing Tags
 
-- Add new tags via the tag input + "+" button
-- Click tags to select/deselect when adding tasks
-- Remove tags by clicking the delete icon (affects all associated tasks)
+- **Create tags**: Click the "Add Tag" button to create custom tags
+- **Select tags**: Click on tags to toggle selection when creating tasks
+- **View tags**: See all assigned tags displayed directly on task cards
+- **Edit task tags**: Click the tag icon on any task to open the tag selector
+- **Toggle tags**: Click any tag in the selector to add/remove it from a task
+- **Remove tags**: Click the X icon on a tag to delete it from the entire system
 
 ### 🔄 Moving Tasks
 
-**Option 1: Drag and Drop**
-
-- Click and drag a task to another column and release
-
-**Option 2: Status Dropdown**
-
-- Use the dropdown on a task card to change its column
+- Click and drag a task to another column or position
+- Visual indicators show where the task will be placed
 
 ### 🗑️ Deleting Tasks
 
@@ -96,6 +94,7 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 ```bash
 src/
   ├── components/
+  │   ├── TagChip.tsx       # Tag chip component
   │   ├── DropArea.tsx      # Drag and drop logic
   │   ├── TodoCard.tsx      # Task card component
   │   └── TodoColumn.tsx    # Column wrapper
