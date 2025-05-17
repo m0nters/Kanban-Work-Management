@@ -26,6 +26,7 @@ const TodoCard: React.FC<TodoCardProps> = ({
 }) => {
   const [showTagSelector, setShowTagSelector] = useState(false);
   const tagSelectorRef = useRef<HTMLDivElement>(null);
+  const tagButtonRef = useRef<HTMLButtonElement>(null);
 
   // Add state for editing
   const [isEditing, setIsEditing] = useState(false);
@@ -38,7 +39,9 @@ const TodoCard: React.FC<TodoCardProps> = ({
       if (
         showTagSelector &&
         tagSelectorRef.current &&
-        !tagSelectorRef.current.contains(event.target as Node)
+        !tagSelectorRef.current.contains(event.target as Node) &&
+        tagButtonRef.current &&
+        !tagButtonRef.current.contains(event.target as Node)
       ) {
         setShowTagSelector(false);
       }
@@ -129,6 +132,7 @@ const TodoCard: React.FC<TodoCardProps> = ({
         )}
 
         <button
+          ref={tagButtonRef}
           onClick={() => setShowTagSelector(!showTagSelector)}
           className="mr-2 bg-gray-100 hover:bg-gray-200 p-1 rounded cursor-pointer"
           title="Manage Tags"

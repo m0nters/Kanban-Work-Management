@@ -67,12 +67,7 @@ const TagChip: React.FC<TagChipProps> = ({
           : "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
       } ${isEditing ? "cursor-text" : "cursor-pointer"}`}
     >
-      <input
-        type="checkbox"
-        checked={isSelected}
-        className="mr-1 h-3 w-3"
-        onClick={(e) => e.stopPropagation()}
-      />
+      <input type="checkbox" checked={isSelected} className="mr-1 h-3 w-3" />
 
       {isEditing ? (
         <input
