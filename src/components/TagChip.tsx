@@ -9,7 +9,7 @@ interface TagChipProps {
   text: string;
   isSelected?: boolean;
   mode?: TagChipMode;
-  onClick?: () => void; // For custom click handling (like add button)
+  onClick?: () => void;
 }
 
 const TagChip: React.FC<TagChipProps> = ({

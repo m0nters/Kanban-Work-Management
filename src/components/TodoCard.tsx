@@ -23,12 +23,13 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
   } = useTodoContext();
 
   const [showTagSelector, setShowTagSelector] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [editText, setEditText] = useState(todo.text);
+  const [dragHandle, setDragHandle] = useState(false); // Track if drag started from handle
+
   const tagSelectorRef = useRef<HTMLDivElement>(null);
   const tagButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Add state for editing
-  const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(todo.text);
   const editInputRef = useRef<HTMLInputElement>(null);
 
   // Handle clicks outside the tag selector
@@ -98,15 +99,32 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
 
   return (
     <div
-      draggable={!isEditing} // Disable dragging when editing
-      onDragStart={isEditing ? undefined : () => handleDragStart(todo.id)}
-      onDragEnd={isEditing ? undefined : handleDragEnd}
-      className={`flex flex-col p-3 bg-white rounded-md shadow-sm border-l-4 ${getStatusColor()} 
-        ${isEditing ? "" : "cursor-move"} hover:shadow-md transition-all`}
+      draggable={dragHandle} // Only draggable when not editing and handle is being used
+      onDragStart={() => handleDragStart(todo.id)}
+      onDragEnd={() => {
+        handleDragEnd();
+        setIsDragging(false);
+        setDragHandle(false);
+      }}
+      className={`flex flex-col p-3 bg-white rounded-md shadow-sm border-l-4  
+      hover:shadow-md ${getStatusColor()} ${
+        isDragging && "opacity-50"
+      } transition-all`}
     >
       {/* Card header content */}
       <div className="flex items-start mb-2">
-        <div className="pr-3 text-gray-500">
+        <div
+          className="pr-3 text-gray-500 cursor-move"
+          onMouseDown={() => {
+            setDragHandle(true);
+            setIsDragging(true);
+          }}
+          onMouseUp={() => {
+            setDragHandle(false);
+            setIsDragging(false);
+          }}
+          title="Drag to move"
+        >
           <Bars3Icon className="h-5 w-5" />
         </div>
 
@@ -156,7 +174,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
       {todo.tags.length > 0 && !showTagSelector && (
         <div
           onDoubleClick={() => setShowTagSelector(true)}
-          className="flex flex-wrap gap-1 ml-8 mt-1 cursor-pointer"
+          className="flex flex-wrap gap-1 pl-8 mt-1 cursor-pointer"
         >
           {todo.tags.map((tag) => (
             <TagChip key={tag} text={tag} isSelected={true} mode="read-only" />
