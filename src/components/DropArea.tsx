@@ -2,7 +2,6 @@ import React, { useState } from "react";
 
 interface DropAreaProps {
   isVisible: boolean; // happens when a card is being dragged
-  index: number;
   onDrop: () => void;
 }
 

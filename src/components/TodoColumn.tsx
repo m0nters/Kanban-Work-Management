@@ -1,37 +1,18 @@
 import React from "react";
 import TodoCard from "./TodoCard";
 import DropArea from "./DropArea";
-import { Todo } from "../App";
+import { Todo } from "../contexts/TodoContext";
+import { useTodoContext } from "../contexts/TodoContext";
 
 interface TodoColumnProps {
   columnId: string;
   todos: Todo[];
   title: string;
-  activeCard: number | null;
-  onDragStart: (todoId: string) => void;
-  onDragEnd: () => void;
-  onDrop: (columnId: string, index: number) => void;
-  onDelete: (id: string) => void;
-  onUpdateTags: (todoId: string, tag: string) => void;
-  onUpdateText: (todoId: string, newText: string) => void;
-  availableTags: string[];
-  onEditTag: (oldText: string, newText: string) => void;
 }
 
-const TodoColumn: React.FC<TodoColumnProps> = ({
-  columnId,
-  todos,
-  title,
-  activeCard,
-  onDragStart,
-  onDragEnd,
-  onDrop,
-  onDelete,
-  onUpdateTags,
-  onUpdateText,
-  availableTags,
-  onEditTag,
-}) => {
+const TodoColumn: React.FC<TodoColumnProps> = ({ columnId, todos, title }) => {
+  const { activeCard, handleDrop } = useTodoContext();
+
   // Get badge color based on column
   const getBadgeColor = () => {
     switch (columnId) {
@@ -61,8 +42,7 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
       {/* First drop area at top */}
       <DropArea
         isVisible={activeCard !== null}
-        index={0}
-        onDrop={() => onDrop(columnId, 0)}
+        onDrop={() => handleDrop(columnId, 0)}
       />
 
       {todos.length === 0 ? (
@@ -70,22 +50,12 @@ const TodoColumn: React.FC<TodoColumnProps> = ({
       ) : (
         todos.map((todo, index) => (
           <div key={todo.id} className="mb-2">
-            <TodoCard
-              todo={todo}
-              onDragStart={() => onDragStart(todo.id)}
-              onDragEnd={onDragEnd}
-              onDelete={() => onDelete(todo.id)}
-              onUpdateTags={onUpdateTags}
-              onUpdateText={onUpdateText}
-              availableTags={availableTags}
-              onEditTag={onEditTag}
-            />
+            <TodoCard todo={todo} />
 
             {/* Drop area after each item */}
             <DropArea
               isVisible={activeCard !== null}
-              index={index + 1}
-              onDrop={() => onDrop(columnId, index + 1)}
+              onDrop={() => handleDrop(columnId, index + 1)}
             />
           </div>
         ))

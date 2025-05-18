@@ -1,29 +1,27 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Bars3Icon, TrashIcon, TagIcon } from "@heroicons/react/16/solid";
-import { Todo } from "../App";
+import { useTodoContext } from "../contexts/TodoContext";
 import TagChip from "./TagChip";
 
 interface TodoCardProps {
-  todo: Todo;
-  onDragStart: () => void;
-  onDragEnd: () => void;
-  onDelete: () => void;
-  onUpdateTags: (todoId: string, tag: string) => void;
-  onUpdateText: (todoId: string, newText: string) => void;
-  availableTags: string[];
-  onEditTag: (oldText: string, newText: string) => void;
+  todo: {
+    id: string;
+    text: string;
+    status: string;
+    tags: string[];
+  };
 }
 
-const TodoCard: React.FC<TodoCardProps> = ({
-  todo,
-  onDragStart,
-  onDragEnd,
-  onDelete,
-  onUpdateTags,
-  onUpdateText,
-  availableTags,
-  onEditTag,
-}) => {
+const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
+  const {
+    tags: availableTags,
+    handleDragStart,
+    handleDragEnd,
+    updateTodoText,
+    updateTodoTags,
+    deleteTodo,
+  } = useTodoContext();
+
   const [showTagSelector, setShowTagSelector] = useState(false);
   const tagSelectorRef = useRef<HTMLDivElement>(null);
   const tagButtonRef = useRef<HTMLButtonElement>(null);
@@ -46,15 +44,22 @@ const TodoCard: React.FC<TodoCardProps> = ({
         setShowTagSelector(false);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && showTagSelector) {
+        setShowTagSelector(false);
+      }
+    }
 
     // Add event listener when selector is visible
     if (showTagSelector) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
 
     // Clean up the event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [showTagSelector]);
 
@@ -68,7 +73,7 @@ const TodoCard: React.FC<TodoCardProps> = ({
   // Save edited text
   const saveEdit = () => {
     if (editText.trim() !== "") {
-      onUpdateText(todo.id, editText);
+      updateTodoText(todo.id, editText);
       setIsEditing(false);
     } else {
       // If empty, revert to original
@@ -94,9 +99,9 @@ const TodoCard: React.FC<TodoCardProps> = ({
   return (
     <div
       draggable={!isEditing} // Disable dragging when editing
-      onDragStart={isEditing ? undefined : onDragStart}
-      onDragEnd={isEditing ? undefined : onDragEnd}
-      className={`flex flex-col p-3 bg-white border rounded-md border-l-4 ${getStatusColor()} 
+      onDragStart={isEditing ? undefined : () => handleDragStart(todo.id)}
+      onDragEnd={isEditing ? undefined : handleDragEnd}
+      className={`flex flex-col p-3 bg-white rounded-md shadow-sm border-l-4 ${getStatusColor()} 
         ${isEditing ? "" : "cursor-move"} hover:shadow-md transition-all`}
     >
       {/* Card header content */}
@@ -140,7 +145,7 @@ const TodoCard: React.FC<TodoCardProps> = ({
           <TagIcon className="h-4 w-4 text-gray-600" />
         </button>
         <button
-          onClick={onDelete}
+          onClick={() => deleteTodo(todo.id)}
           className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm transition-colors cursor-pointer"
         >
           <TrashIcon className="h-4 w-4" />
@@ -154,12 +159,12 @@ const TodoCard: React.FC<TodoCardProps> = ({
           className="flex flex-wrap gap-1 ml-8 mt-1 cursor-pointer"
         >
           {todo.tags.map((tag) => (
-            <TagChip key={tag} text={tag} isSelected={true} />
+            <TagChip key={tag} text={tag} isSelected={true} mode="read-only" />
           ))}
         </div>
       )}
 
-      {/* Tag selector with ref */}
+      {/* Tag selector */}
       {showTagSelector && (
         <div
           ref={tagSelectorRef}
@@ -174,8 +179,8 @@ const TodoCard: React.FC<TodoCardProps> = ({
                 key={tag}
                 text={tag}
                 isSelected={todo.tags.includes(tag)}
-                onClick={() => onUpdateTags(todo.id, tag)}
-                onEdit={onEditTag}
+                mode="toggle-only"
+                onClick={() => updateTodoTags(todo.id, tag)}
               />
             ))}
           </div>

@@ -1,23 +1,25 @@
 import React, { useState, useRef, useEffect } from "react";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/16/solid";
+import { useTodoContext } from "../contexts/TodoContext";
+
+// Define the possible modes as a type
+type TagChipMode = "full" | "toggle-only" | "read-only" | "add-button";
 
 interface TagChipProps {
   text: string;
   isSelected?: boolean;
-  isAddButton?: boolean;
-  onClick?: () => void; // if there's no onClick, the chip is just for displaying
-  onDelete?: () => void;
-  onEdit?: (oldText: string, newText: string) => void;
+  mode?: TagChipMode;
+  onClick?: () => void; // For custom click handling (like add button)
 }
 
 const TagChip: React.FC<TagChipProps> = ({
   text,
   isSelected = false,
-  isAddButton = false,
+  mode = "full", // Default is full functionality
   onClick,
-  onDelete,
-  onEdit,
 }) => {
+  const { deleteTag, updateTagText } = useTodoContext();
+
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(text);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,14 +39,19 @@ const TagChip: React.FC<TagChipProps> = ({
       return;
     }
 
-    if (updatedEditText !== text && onEdit) {
-      onEdit(text, updatedEditText);
+    if (updatedEditText !== text) {
+      updateTagText(text, updatedEditText);
     }
 
     setIsEditing(false);
   };
 
-  if (isAddButton) {
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteTag(text);
+  };
+
+  if (mode === "add-button") {
     return (
       <button
         onClick={onClick}
@@ -56,9 +63,18 @@ const TagChip: React.FC<TagChipProps> = ({
     );
   }
 
+  // Determine if checkbox should be shown
+  const showCheckbox = mode === "full" || mode === "toggle-only";
+
+  // Determine if editing is allowed
+  const canEdit = mode === "full";
+
+  // Determine if delete is allowed
+  const canDelete = mode === "full";
+
   return (
     <div
-      onClick={onClick && !isEditing ? onClick : undefined}
+      onClick={onClick}
       className={`flex items-center px-2 py-1 rounded-full text-sm border transition-colors ${
         isSelected
           ? "bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200"
@@ -66,12 +82,12 @@ const TagChip: React.FC<TagChipProps> = ({
       } ${
         isEditing
           ? "cursor-text"
-          : onClick
+          : mode !== "read-only"
           ? "cursor-pointer"
           : "cursor-default"
       }`}
     >
-      {onClick && (
+      {showCheckbox && (
         <input
           type="checkbox"
           checked={isSelected}
@@ -101,21 +117,18 @@ const TagChip: React.FC<TagChipProps> = ({
         <span
           onDoubleClick={(e) => {
             e.stopPropagation();
-            if (onEdit) setIsEditing(true);
+            if (canEdit) setIsEditing(true);
           }}
-          className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[100px]" // in case the text is too long
-          title={text} // Show full text on hover
+          className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[100px]"
+          title={text}
         >
           {text}
         </span>
       )}
 
-      {onDelete && !isEditing && (
+      {canDelete && !isEditing && (
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
+          onClick={handleDelete}
           className="ml-1 text-gray-500 hover:text-red-500 cursor-pointer"
         >
           <XMarkIcon className="h-3 w-3" />

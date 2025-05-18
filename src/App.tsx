@@ -1,52 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import TodoColumn from "./components/TodoColumn";
 import TagChip from "./components/TagChip";
+import { TodoProvider, useTodoContext } from "./contexts/TodoContext";
 
-type Status = "todo" | "doing" | "done";
-
-export interface Todo {
-  id: string;
-  text: string;
-  status: Status;
-  tags: string[];
-}
-
-function App() {
-  // Load todos from localStorage
-  const [todos, setTodos] = useState<Todo[]>(() => {
-    const savedTodos = localStorage.getItem("todos");
-    if (savedTodos) {
-      return JSON.parse(savedTodos);
-    }
-    return [];
-  });
-
-  // Load tags from localStorage
-  const [tags, setTags] = useState<string[]>(() => {
-    const savedTags = localStorage.getItem("tags");
-    if (savedTags) {
-      return JSON.parse(savedTags);
-    }
-    return [];
-  });
+function AppContent() {
+  const {
+    todosByStatus,
+    tags,
+    selectedTags,
+    addTodo,
+    addTag,
+    toggleTagSelection,
+  } = useTodoContext();
 
   const [input, setInput] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [activeCard, setActiveCard] = useState<number | null>(null);
   const tagFormRef = useRef<HTMLFormElement>(null);
 
-  // Save todos and tags to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
-
-  useEffect(() => {
-    localStorage.setItem("tags", JSON.stringify(tags));
-  }, [tags]);
-
-  // Add a new effect to handle clicks outside the tag form
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -55,219 +26,47 @@ function App() {
         !tagFormRef.current.contains(event.target as Node)
       ) {
         setIsAddingTag(false);
-        setTagInput("");
+        setTagInput(""); // Clear input when closing
       }
     }
 
-    // Add event listener when isAddingTag is true
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && isAddingTag) {
+        setIsAddingTag(false);
+        setTagInput(""); // Clear input when closing
+      }
+    }
+
+    // Add event listener when tag form is open
     if (isAddingTag) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
 
     // Clean up the event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isAddingTag]);
 
-  // Add new todo
+  // Handle form submission for new todo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() === "") return;
 
-    const newTodo: Todo = {
-      id: crypto.randomUUID(),
-      text: input.trim(),
-      status: "todo",
-      tags: [...selectedTags],
-    };
-
-    setTodos([...todos, newTodo]);
+    addTodo(input);
     setInput("");
-    setSelectedTags([]);
   };
 
-  // Update todo card's text
-  const updateTodoText = (todoId: string, newText: string) => {
-    setTodos(
-      todos.map((todo) => {
-        if (todo.id === todoId) {
-          return { ...todo, text: newText };
-        }
-        return todo;
-      })
-    );
-  };
-
-  // Update tag text globally
-  const updateTagText = (oldText: string, newText: string) => {
-    // Check if the new tag name already exists
-    if (tags.includes(newText)) {
-      alert("This tag already exists!");
-      return;
-    }
-
-    // Update the tags array
-    setTags(tags.map((tag) => (tag === oldText ? newText : tag)));
-
-    // Update selectedTags array
-    setSelectedTags(
-      selectedTags.map((tag) => (tag === oldText ? newText : tag))
-    );
-
-    // Update all todos that have this tag
-    setTodos(
-      todos.map((todo) => ({
-        ...todo,
-        tags: todo.tags.map((tag) => (tag === oldText ? newText : tag)),
-      }))
-    );
-  };
-
-  // Add new tag
+  // Handle adding a new tag
   const handleAddTag = (e: React.FormEvent) => {
     e.preventDefault();
     if (tagInput.trim() === "") return;
 
-    // Only add if the tag doesn't already exist
-    if (!tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
-    }
-
+    addTag(tagInput);
     setTagInput("");
     setIsAddingTag(false);
-  };
-
-  // Delete tag
-  const deleteTag = (tagToDelete: string) => {
-    // Remove tag from tags list
-    setTags(tags.filter((tag) => tag !== tagToDelete));
-
-    // Remove tag from selectedTags
-    setSelectedTags(selectedTags.filter((tag) => tag !== tagToDelete));
-
-    // Remove tag from all todos that have it
-    setTodos(
-      todos.map((todo) => ({
-        ...todo,
-        tags: todo.tags.filter((tag) => tag !== tagToDelete),
-      }))
-    );
-  };
-
-  // Toggle tag selection for new todo
-  const toggleTagSelection = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
-    }
-  };
-
-  // Update todo tags
-  const updateTodoTags = (todoId: string, tagToToggle: string) => {
-    setTodos(
-      todos.map((todo) => {
-        if (todo.id === todoId) {
-          const updatedTags = todo.tags.includes(tagToToggle)
-            ? todo.tags.filter((t) => t !== tagToToggle)
-            : [...todo.tags, tagToToggle];
-
-          return { ...todo, tags: updatedTags };
-        }
-        return todo;
-      })
-    );
-  };
-
-  // Delete todo
-  const deleteTodo = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
-  };
-
-  // Handle drag and drop between columns
-  const handleDragStart = (todoId: string) => {
-    const todoIndex = todos.findIndex((todo) => todo.id === todoId);
-    setActiveCard(todoIndex);
-  };
-
-  const handleDragEnd = () => {
-    setActiveCard(null);
-  };
-
-  const handleDrop = (targetColumnId: string, targetIndex: number) => {
-    if (activeCard === null) return;
-
-    // Remove the item from its original position
-    const updatedTodos = [...todos]; // we don't mutate directly the state
-    const [activeTodo] = updatedTodos.splice(activeCard, 1);
-
-    // If the todo is dropped in the same column
-    if (activeTodo.status === targetColumnId) {
-      const currentTodoIndex = todosByStatus[
-        targetColumnId as Status
-      ].findIndex((t) => t.id === activeTodo.id);
-
-      // If dropping in same position or right after itself, do nothing
-      if (
-        currentTodoIndex === targetIndex ||
-        currentTodoIndex === targetIndex - 1
-      ) {
-        setActiveCard(null);
-        return;
-      }
-
-      // Decrement target index because the item's removal shifts indices down
-      if (currentTodoIndex < targetIndex) {
-        targetIndex--;
-      }
-    }
-
-    // Create the updated todo with possibly new status
-    const newTodo = {
-      ...activeTodo,
-      status: targetColumnId as Status,
-    };
-
-    // Get todos in the target column after removal
-    const targetColumnTodos = updatedTodos.filter(
-      (t) => t.status === targetColumnId
-    );
-
-    // Insert at beginning of the target column
-    if (targetIndex === 0) {
-      const firstTargetColumnIndex = updatedTodos.findIndex(
-        (t) => t.status === targetColumnId
-      );
-      if (firstTargetColumnIndex === -1) {
-        updatedTodos.push(newTodo);
-      } else {
-        updatedTodos.splice(firstTargetColumnIndex, 0, newTodo);
-      }
-    }
-    // Insert at a specific position
-    else if (targetIndex < targetColumnTodos.length) {
-      // Find the todo that should appear before our dropped item
-      const targetTodo = targetColumnTodos[targetIndex - 1];
-      const insertAtIndex = updatedTodos.findIndex(
-        (t) => t.id === targetTodo.id
-      );
-      updatedTodos.splice(insertAtIndex + 1, 0, newTodo);
-    }
-    // Add to the end of the column
-    else {
-      updatedTodos.push(newTodo);
-    }
-
-    setTodos(updatedTodos);
-    setActiveCard(null);
-  };
-
-  // Filter todos by status for easier to work with
-  const todosByStatus = {
-    todo: todos.filter((todo) => todo.status === "todo"),
-    doing: todos.filter((todo) => todo.status === "doing"),
-    done: todos.filter((todo) => todo.status === "done"),
   };
 
   return (
@@ -304,8 +103,6 @@ function App() {
                 text={tag}
                 isSelected={selectedTags.includes(tag)}
                 onClick={() => toggleTagSelection(tag)}
-                onDelete={() => deleteTag(tag)}
-                onEdit={updateTagText}
               />
             ))}
 
@@ -333,7 +130,7 @@ function App() {
             ) : (
               <TagChip
                 text="Add Tag"
-                isAddButton={true}
+                mode="add-button"
                 onClick={() => setIsAddingTag(true)}
               />
             )}
@@ -349,15 +146,6 @@ function App() {
             columnId="todo"
             title="To Do"
             todos={todosByStatus.todo}
-            activeCard={activeCard}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDrop={handleDrop}
-            onDelete={deleteTodo}
-            onUpdateTags={updateTodoTags}
-            onUpdateText={updateTodoText}
-            availableTags={tags}
-            onEditTag={updateTagText}
           />
         </div>
 
@@ -367,37 +155,23 @@ function App() {
             columnId="doing"
             title="In Progress"
             todos={todosByStatus.doing}
-            activeCard={activeCard}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDrop={handleDrop}
-            onDelete={deleteTodo}
-            onUpdateTags={updateTodoTags}
-            onUpdateText={updateTodoText}
-            availableTags={tags}
-            onEditTag={updateTagText}
           />
         </div>
 
         {/* Done column */}
         <div className="bg-gray-100 rounded-md p-4">
-          <TodoColumn
-            columnId="done"
-            title="Done"
-            todos={todosByStatus.done}
-            activeCard={activeCard}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDrop={handleDrop}
-            onDelete={deleteTodo}
-            onUpdateTags={updateTodoTags}
-            onUpdateText={updateTodoText}
-            availableTags={tags}
-            onEditTag={updateTagText}
-          />
+          <TodoColumn columnId="done" title="Done" todos={todosByStatus.done} />
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <TodoProvider>
+      <AppContent />
+    </TodoProvider>
   );
 }
 
