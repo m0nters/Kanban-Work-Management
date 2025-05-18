@@ -5,7 +5,7 @@ interface TagChipProps {
   text: string;
   isSelected?: boolean;
   isAddButton?: boolean;
-  onClick: () => void;
+  onClick?: () => void; // if there's no onClick, the chip is just for displaying
   onDelete?: () => void;
   onEdit?: (oldText: string, newText: string) => void;
 }
@@ -26,8 +26,6 @@ const TagChip: React.FC<TagChipProps> = ({
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
-      // Select all text
-      inputRef.current.select();
     }
   }, [isEditing]);
 
@@ -60,14 +58,26 @@ const TagChip: React.FC<TagChipProps> = ({
 
   return (
     <div
-      onClick={!isEditing ? onClick : undefined}
+      onClick={onClick && !isEditing ? onClick : undefined}
       className={`flex items-center px-2 py-1 rounded-full text-sm border transition-colors ${
         isSelected
-          ? "bg-blue-100 text-blue-800 border-blue-300"
+          ? "bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200"
           : "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
-      } ${isEditing ? "cursor-text" : "cursor-pointer"}`}
+      } ${
+        isEditing
+          ? "cursor-text"
+          : onClick
+          ? "cursor-pointer"
+          : "cursor-default"
+      }`}
     >
-      <input type="checkbox" checked={isSelected} className="mr-1 h-3 w-3" />
+      {onClick && (
+        <input
+          type="checkbox"
+          checked={isSelected}
+          className="mr-1 h-3 w-3 cursor-pointer"
+        />
+      )}
 
       {isEditing ? (
         <input
@@ -84,7 +94,7 @@ const TagChip: React.FC<TagChipProps> = ({
             }
             e.stopPropagation();
           }}
-          className="bg-transparent w-full outline-none text-blue-800 text-sm"
+          className="bg-transparent w-full outline-none text-sm"
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
@@ -93,6 +103,8 @@ const TagChip: React.FC<TagChipProps> = ({
             e.stopPropagation();
             if (onEdit) setIsEditing(true);
           }}
+          className="overflow-hidden text-ellipsis whitespace-nowrap max-w-[100px]" // in case the text is too long
+          title={text} // Show full text on hover
         >
           {text}
         </span>

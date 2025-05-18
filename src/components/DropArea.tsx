@@ -23,7 +23,11 @@ const DropArea: React.FC<DropAreaProps> = ({ isVisible, onDrop }) => {
         setDragOver(true);
       }}
       onDragLeave={() => setDragOver(false)}
-      onDrop={onDrop}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDrop();
+        setDragOver(false);
+      }}
     ></div>
   );
 };
