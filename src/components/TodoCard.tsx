@@ -25,6 +25,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
   const [showTagSelector, setShowTagSelector] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [editText, setEditText] = useState(todo.text);
   const [dragHandle, setDragHandle] = useState(false); // Track if drag started from handle
 
@@ -106,10 +107,16 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
         setIsDragging(false);
         setDragHandle(false);
       }}
-      className={`flex flex-col p-3 bg-white rounded-md shadow-sm border-l-4  
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+      }}
+      onDragLeave={() => setIsDraggingOver(false)}
+      onDrop={() => setIsDraggingOver(false)}
+      className={`flex flex-col p-3 rounded-md shadow-sm border-l-4  
       hover:shadow-md ${getStatusColor()} ${
         isDragging && "opacity-50"
-      } transition-all`}
+      } transition-all ${isDraggingOver ? "bg-red-100" : "bg-white"}`}
     >
       {/* Card header content */}
       <div className="flex items-start mb-2">

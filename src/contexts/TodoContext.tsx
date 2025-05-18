@@ -8,6 +8,11 @@ import {
 
 type Status = "todo" | "doing" | "done";
 
+interface ActiveCardProps {
+  column: Status; // The column where the card is currently located
+  index: number; // The index position of the card in the column
+}
+
 export interface Todo {
   id: string;
   text: string;
@@ -17,9 +22,10 @@ export interface Todo {
 
 interface TodoContextType {
   // State
+  todos: Todo[];
   tags: string[];
   selectedTags: string[];
-  activeCard: number | null;
+  activeCard: ActiveCardProps | null;
 
   // Todo actions
   addTodo: (text: string) => void;
@@ -80,7 +86,7 @@ export function TodoProvider({ children }: TodoProviderProps) {
   });
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [activeCard, setActiveCard] = useState<number | null>(null);
+  const [activeCard, setActiveCard] = useState<ActiveCardProps | null>(null);
 
   // Save todos and tags to localStorage whenever they change
   useEffect(() => {
@@ -205,7 +211,8 @@ export function TodoProvider({ children }: TodoProviderProps) {
   // Handle drag and drop between columns
   const handleDragStart = (todoId: string) => {
     const todoIndex = todos.findIndex((todo) => todo.id === todoId);
-    setActiveCard(todoIndex);
+    const todoColumn = todos[todoIndex].status as Status;
+    setActiveCard({ index: todoIndex, column: todoColumn });
   };
 
   const handleDragEnd = () => {
@@ -217,22 +224,13 @@ export function TodoProvider({ children }: TodoProviderProps) {
 
     // Remove the item from its original position
     const updatedTodos = [...todos]; // we don't mutate directly the state
-    const [activeTodo] = updatedTodos.splice(activeCard, 1);
+    const [activeTodo] = updatedTodos.splice(activeCard.index, 1);
 
     // If the todo is dropped in the same column
     if (activeTodo.status === targetColumnId) {
       const currentTodoIndex = todosByStatus[
         targetColumnId as Status
       ].findIndex((t) => t.id === activeTodo.id);
-
-      // If dropping in same position or right after itself, do nothing
-      if (
-        currentTodoIndex === targetIndex ||
-        currentTodoIndex === targetIndex - 1
-      ) {
-        setActiveCard(null);
-        return;
-      }
 
       // Decrement target index because the item's removal shifts indices down
       if (currentTodoIndex < targetIndex) {
@@ -288,6 +286,7 @@ export function TodoProvider({ children }: TodoProviderProps) {
   };
 
   const value = {
+    todos,
     tags,
     selectedTags,
     activeCard,

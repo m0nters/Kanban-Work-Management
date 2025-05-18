@@ -11,7 +11,7 @@ interface TodoColumnProps {
 }
 
 const TodoColumn: React.FC<TodoColumnProps> = ({ columnId, todos, title }) => {
-  const { activeCard, handleDrop } = useTodoContext();
+  const { activeCard, handleDrop, todos: allTodos } = useTodoContext();
 
   // Get badge color based on column
   const getBadgeColor = () => {
@@ -27,6 +27,14 @@ const TodoColumn: React.FC<TodoColumnProps> = ({ columnId, todos, title }) => {
     }
   };
 
+  // Get the active card's ID if it exists
+  const getActiveTodoId = () => {
+    if (activeCard === null) return null;
+    return allTodos[activeCard.index]?.id;
+  };
+
+  const activeTodoId = getActiveTodoId();
+
   return (
     <div className="min-h-[200px]">
       {/* Column header with task count */}
@@ -40,10 +48,13 @@ const TodoColumn: React.FC<TodoColumnProps> = ({ columnId, todos, title }) => {
       </div>
 
       {/* First drop area at top */}
-      <DropArea
-        isVisible={activeCard !== null}
-        onDrop={() => handleDrop(columnId, 0)}
-      />
+      {/* Hide only if the first todo in this column is being dragged */}
+      {!(todos.length > 0 && activeTodoId === todos[0].id) && (
+        <DropArea
+          isVisible={activeCard !== null}
+          onDrop={() => handleDrop(columnId, 0)}
+        />
+      )}
 
       {todos.length === 0 ? (
         <div className="text-center py-4 text-gray-500">No tasks</div>
@@ -53,10 +64,16 @@ const TodoColumn: React.FC<TodoColumnProps> = ({ columnId, todos, title }) => {
             <TodoCard todo={todo} />
 
             {/* Drop area after each item */}
-            <DropArea
-              isVisible={activeCard !== null}
-              onDrop={() => handleDrop(columnId, index + 1)}
-            />
+            {/* Hide if current todo or next todo is being dragged */}
+            {!(
+              activeTodoId === todo.id ||
+              (index < todos.length - 1 && activeTodoId === todos[index + 1].id)
+            ) && (
+              <DropArea
+                isVisible={activeCard !== null}
+                onDrop={() => handleDrop(columnId, index + 1)}
+              />
+            )}
           </div>
         ))
       )}
