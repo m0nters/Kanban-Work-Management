@@ -174,7 +174,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
       {todo.tags.length > 0 && !showTagSelector && (
         <div
           onDoubleClick={() => setShowTagSelector(true)}
-          className="flex flex-wrap gap-1 pl-8 mt-1 cursor-pointer"
+          className="flex flex-wrap gap-1 pl-8 mt-1 cursor-pointer select-none"
         >
           {todo.tags.map((tag) => (
             <TagChip key={tag} text={tag} isSelected={true} mode="read-only" />
