@@ -6,6 +6,12 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 
 ---
 
+## 🔗 Live Demo
+
+Try the application now: [View Live Demo →](https://kanban-work-management-qcnv.vercel.app/)
+
+---
+
 ## 🚀 Features
 
 - 🧩 **Kanban Layout** — Organize tasks into "To Do", "In Progress", and "Done" columns
