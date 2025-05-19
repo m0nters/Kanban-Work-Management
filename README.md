@@ -8,7 +8,7 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 
 ## 🔗 Live Demo
 
-Try the application now: [View Live Demo →](kanban-work-management.vercel.app/)
+Try the application now: [View Live Demo →](https://kanban-work-management.vercel.app/)
 
 ---
 
