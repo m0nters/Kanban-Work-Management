@@ -66,8 +66,9 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 
 ### 🔄 Moving Tasks
 
-- Click and drag a task to another column or position
-- Visual indicators show where the task will be placed
+- Click and drag a task **by the handle icon** to another column or position
+- Visual indicators show valid drop areas between tasks
+- Drop areas adjacent to the dragged task are automatically hidden
 
 ### 🗑️ Deleting Tasks
 
@@ -77,17 +78,19 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 
 - **Create tags**: Click the "Add Tag" button to create custom tags
 - **Select tags**: Click on tags to toggle selection when creating tasks
-- **View tags**: See all assigned tags displayed directly on task cards
+- **View tags**: See all assigned tags displayed directly on task cards with text truncation for long tags
 - **Edit task tags**: Click the tag icon on any task to open the tag selector
-- **Edit tag**: Double click the tag content and rewrite your desired one
+- **Edit tag**: Double click the tag content to edit (only in full mode)
 - **Toggle tags**: Click any tag in the selector to add/remove it from a task
 - **Remove tags**: Click the X icon on a tag to delete it from the entire system
+- **Tag display modes**: Tags appear in different modes (read-only, toggle-only, full) depending on context
 
 ---
 
 ## 🧰 Technologies Used
 
 - **React 19** — UI framework
+- **React Context API** — State management
 - **TypeScript** — Static typing
 - **TailwindCSS** — Utility-first styling
 - **Vite** — Fast dev/build tool
@@ -97,21 +100,32 @@ A sleek and responsive Kanban board application built with **React**, **TypeScri
 
 ## 📁 Project Structure
 
+````bash
 ```bash
 src/
   ├── components/
-  │   ├── TagChip.tsx       # Tag chip component
-  │   ├── DropArea.tsx      # Drag and drop logic
+  │   ├── TagChip.tsx       # Tag chip component with multiple display modes
+  │   ├── DropArea.tsx      # Drag and drop target areas
   │   ├── TodoCard.tsx      # Task card component
   │   └── TodoColumn.tsx    # Column wrapper
+  ├── contexts/
+  │   └── TodoContext.tsx   # Global state management
   ├── App.tsx               # App root
   ├── main.tsx              # App entry point
   └── styles.css            # Global styles
-```
+````
 
 ---
 
 ## 📦 Build for Production
+
+1. **Install dependencies (if not already installed)**
+
+```bash
+npm install --legacy-peer-deps
+```
+
+2. **Build for production**
 
 ```bash
 npm run build
