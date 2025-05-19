@@ -106,7 +106,6 @@ Try the application now: [View Live Demo →](https://kanban-work-management-qcn
 
 ## 📁 Project Structure
 
-````bash
 ```bash
 src/
   ├── components/
@@ -119,7 +118,7 @@ src/
   ├── App.tsx               # App root
   ├── main.tsx              # App entry point
   └── styles.css            # Global styles
-````
+```
 
 ---
 
@@ -127,15 +126,15 @@ src/
 
 1. **Install dependencies (if not already installed)**
 
-```bash
-npm install --legacy-peer-deps
-```
+   ```bash
+   npm install --legacy-peer-deps
+   ```
 
 2. **Build for production**
 
-```bash
-npm run build
-```
+   ```bash
+   npm run build
+   ```
 
 This will create an optimized production build in the `dist/` folder. You can then deploy it to services like **Netlify**, **Vercel**, **GitHub Pages**, or any static host.
 
