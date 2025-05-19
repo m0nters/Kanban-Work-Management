@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import TodoColumn from "./components/TodoColumn";
 import TagChip from "./components/TagChip";
 import { TodoProvider, useTodoContext } from "./contexts/TodoContext";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function AppContent() {
   const {
@@ -169,9 +170,12 @@ function AppContent() {
 
 function App() {
   return (
-    <TodoProvider>
-      <AppContent />
-    </TodoProvider>
+    <div>
+      <TodoProvider>
+        <AppContent />
+      </TodoProvider>
+      <SpeedInsights />
+    </div>
   );
 }
 
