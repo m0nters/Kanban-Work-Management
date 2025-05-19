@@ -27,13 +27,7 @@ const TodoColumn: React.FC<TodoColumnProps> = ({ columnId, todos, title }) => {
     }
   };
 
-  // Get the active card's ID if it exists
-  const getActiveTodoId = () => {
-    if (activeCard === null) return null;
-    return allTodos[activeCard.index]?.id;
-  };
-
-  const activeTodoId = getActiveTodoId();
+  const activeTodoId = activeCard !== null ? allTodos[activeCard].id : null;
 
   return (
     <div className="min-h-[200px]">
