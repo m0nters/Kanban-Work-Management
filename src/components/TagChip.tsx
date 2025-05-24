@@ -10,6 +10,7 @@ interface TagChipProps {
   isSelected?: boolean;
   mode?: TagChipMode;
   onClick?: () => void;
+  todoId?: string; // For tags on todo cards - so we know which todo to remove from
 }
 
 const TagChip: React.FC<TagChipProps> = ({
@@ -17,11 +18,19 @@ const TagChip: React.FC<TagChipProps> = ({
   isSelected = false,
   mode = "full", // Default is full functionality
   onClick,
+  todoId,
 }) => {
-  const { deleteTag, updateTagText } = useTodoContext();
+  const {
+    deleteTag,
+    updateTagText,
+    handleTagDragStart,
+    handleTagDragEnd,
+    draggedTag,
+  } = useTodoContext();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(text);
+  const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Focus input when editing starts
@@ -51,6 +60,22 @@ const TagChip: React.FC<TagChipProps> = ({
     deleteTag(text);
   };
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setIsDragging(true);
+    handleTagDragStart(text);
+
+    // Set drag data
+    e.dataTransfer.setData("text/plain", text);
+    e.dataTransfer.setData("application/tag-source", todoId || "creation-area");
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    handleTagDragEnd();
+  };
+
   if (mode === "add-button") {
     return (
       <button
@@ -74,8 +99,11 @@ const TagChip: React.FC<TagChipProps> = ({
 
   return (
     <div
+      draggable={!isEditing}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onClick={onClick}
-      className={`flex items-center px-2 py-1 rounded-full text-sm border transition-colors ${
+      className={`flex items-center px-2 py-1 rounded-full text-sm border transition-all ${
         isSelected
           ? "bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200"
           : "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
@@ -85,6 +113,8 @@ const TagChip: React.FC<TagChipProps> = ({
           : mode !== "read-only"
           ? "cursor-pointer"
           : "cursor-default"
+      } ${isDragging ? "opacity-50 scale-95" : ""} ${
+        draggedTag === text ? "ring-2 ring-blue-400" : "" // Highlight existed tag
       }`}
     >
       {showCheckbox && (

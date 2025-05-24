@@ -21,6 +21,7 @@ interface TodoContextType {
   tags: string[];
   selectedTags: string[];
   activeCard: number | null;
+  draggedTag: string | null;
 
   // Todo actions
   addTodo: (text: string) => void;
@@ -34,10 +35,16 @@ interface TodoContextType {
   toggleTagSelection: (tag: string) => void;
   updateTodoTags: (todoId: string, tagToToggle: string) => void;
 
-  // Drag & Drop
+  // Drag & Drop for todos
   handleDragStart: (todoId: string) => void;
   handleDragEnd: () => void;
   handleDrop: (targetColumnId: string, targetIndex: number) => void;
+
+  // Drag & Drop for tags
+  handleTagDragStart: (tagName: string) => void;
+  handleTagDragEnd: () => void;
+  handleTagDropOnTodo: (todoId: string, tagName: string) => void;
+  handleTagDropOutside: (todoId: string, tagName: string) => void;
 
   // Filtered todos
   todosByStatus: {
@@ -82,6 +89,7 @@ export function TodoProvider({ children }: TodoProviderProps) {
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [activeCard, setActiveCard] = useState<number | null>(null);
+  const [draggedTag, setDraggedTag] = useState<string | null>(null);
 
   // Save todos and tags to localStorage whenever they change
   useEffect(() => {
@@ -272,6 +280,41 @@ export function TodoProvider({ children }: TodoProviderProps) {
     setActiveCard(null);
   };
 
+  // Tag drag and drop handlers
+  const handleTagDragStart = (tagName: string) => {
+    setDraggedTag(tagName);
+  };
+
+  const handleTagDragEnd = () => {
+    setDraggedTag(null);
+  };
+
+  const handleTagDropOnTodo = (todoId: string, tagName: string) => {
+    // Add tag to todo if it doesn't already have it
+    setTodos(
+      todos.map((todo) => {
+        if (todo.id === todoId && !todo.tags.includes(tagName)) {
+          return { ...todo, tags: [...todo.tags, tagName] };
+        }
+        return todo;
+      })
+    );
+    setDraggedTag(null);
+  };
+
+  const handleTagDropOutside = (todoId: string, tagName: string) => {
+    // Remove tag from todo
+    setTodos(
+      todos.map((todo) => {
+        if (todo.id === todoId) {
+          return { ...todo, tags: todo.tags.filter((tag) => tag !== tagName) };
+        }
+        return todo;
+      })
+    );
+    setDraggedTag(null);
+  };
+
   // Filter todos by status for easier to work with
   const todosByStatus = {
     todo: todos.filter((todo) => todo.status === "todo"),
@@ -284,6 +327,7 @@ export function TodoProvider({ children }: TodoProviderProps) {
     tags,
     selectedTags,
     activeCard,
+    draggedTag,
     addTodo,
     updateTodoText,
     deleteTodo,
@@ -295,6 +339,10 @@ export function TodoProvider({ children }: TodoProviderProps) {
     handleDragStart,
     handleDragEnd,
     handleDrop,
+    handleTagDragStart,
+    handleTagDragEnd,
+    handleTagDropOnTodo,
+    handleTagDropOutside,
     todosByStatus,
   };
 

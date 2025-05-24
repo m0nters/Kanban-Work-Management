@@ -20,15 +20,22 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
     updateTodoText,
     updateTodoTags,
     deleteTodo,
+    handleTagDropOnTodo,
+    draggedTag,
   } = useTodoContext();
 
+  // UI State
   const [showTagSelector, setShowTagSelector] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [editText, setEditText] = useState(todo.text);
-  const [dragHandle, setDragHandle] = useState(false); // Track if drag started from handle
 
+  // Drag State
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragHandle, setDragHandle] = useState(false);
+  const [isCardHovering, setIsCardHovering] = useState(false); // Another todo card hovering
+  const [isTagHovering, setIsTagHovering] = useState(false); // A tag hovering
+
+  // Refs
   const tagSelectorRef = useRef<HTMLDivElement>(null);
   const tagButtonRef = useRef<HTMLButtonElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
@@ -46,19 +53,18 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
         setShowTagSelector(false);
       }
     }
+
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape" && showTagSelector) {
         setShowTagSelector(false);
       }
     }
 
-    // Add event listener when selector is visible
     if (showTagSelector) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleKeyDown);
     }
 
-    // Clean up the event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
@@ -84,6 +90,48 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
     }
   };
 
+  // Unified drag over handler - determines what's being dragged
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+
+    if (draggedTag) {
+      // A tag is being dragged - show green background
+      setIsTagHovering(true);
+      setIsCardHovering(false);
+    } else {
+      // A todo card is being dragged - show red background
+      setIsCardHovering(true);
+      setIsTagHovering(false);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only reset if we're actually leaving the card
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsCardHovering(false);
+      setIsTagHovering(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Reset hover states
+    setIsCardHovering(false);
+    setIsTagHovering(false);
+
+    // Handle tag drops
+    if (draggedTag) {
+      const tagName = e.dataTransfer.getData("text/plain");
+      const sourceId = e.dataTransfer.getData("application/tag-source");
+
+      if (tagName && sourceId !== todo.id) {
+        handleTagDropOnTodo(todo.id, tagName);
+      }
+    }
+  };
+
   // Get the appropriate color based on status
   const getStatusColor = () => {
     switch (todo.status) {
@@ -98,25 +146,33 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
     }
   };
 
+  // Get background color based on drag state
+  const getBackgroundColor = () => {
+    if (isTagHovering) {
+      return "bg-green-100";
+    }
+    if (isCardHovering) {
+      return "bg-red-100";
+    }
+    return "bg-white";
+  };
+
   return (
     <div
-      draggable={dragHandle} // Only draggable when not editing and handle is being used
+      draggable={dragHandle}
       onDragStart={() => handleDragStart(todo.id)}
       onDragEnd={() => {
         handleDragEnd();
         setIsDragging(false);
         setDragHandle(false);
       }}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setIsDraggingOver(true);
-      }}
-      onDragLeave={() => setIsDraggingOver(false)}
-      onDrop={() => setIsDraggingOver(false)}
-      className={`flex flex-col p-3 rounded-md shadow-sm border-l-4  
-      hover:shadow-md ${getStatusColor()} ${
-        isDragging && "opacity-50"
-      } transition-all ${isDraggingOver ? "bg-red-100" : "bg-white"}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`flex flex-col p-3 rounded-md shadow-sm border-l-4 transition-all
+        hover:shadow-md ${getStatusColor()} ${getBackgroundColor()} ${
+        isDragging ? "opacity-50 scale-95" : ""
+      }`}
     >
       {/* Card header content */}
       <div className="flex items-start mb-2">
@@ -177,15 +233,33 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
         </button>
       </div>
 
-      {/* Tags display */}
+      {/* Tags display area */}
       {todo.tags.length > 0 && !showTagSelector && (
         <div
           onDoubleClick={() => setShowTagSelector(true)}
-          className="flex flex-wrap gap-1 pl-8 mt-1 cursor-pointer select-none"
+          className="flex flex-wrap gap-1 pl-8 mt-1 cursor-pointer select-none relative z-20"
         >
           {todo.tags.map((tag) => (
-            <TagChip key={tag} text={tag} isSelected={true} mode="read-only" />
+            <TagChip
+              key={tag}
+              text={tag}
+              isSelected={true}
+              mode="read-only"
+              todoId={todo.id}
+            />
           ))}
+        </div>
+      )}
+
+      {/* Empty tag area when no tags */}
+      {todo.tags.length === 0 && !showTagSelector && (
+        <div className="pl-9 mt-1 rounded transition-colors min-h-[20px] relative z-20">
+          <span
+            className="text-gray-400 text-sm cursor-pointer"
+            onClick={() => setShowTagSelector(true)}
+          >
+            No tags - click to add
+          </span>
         </div>
       )}
 
@@ -193,7 +267,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
       {showTagSelector && (
         <div
           ref={tagSelectorRef}
-          className="ml-8 mt-2 p-2 bg-gray-50 rounded border cursor-default"
+          className="ml-9 mt-2 p-2 bg-gray-50 rounded border cursor-default relative z-20"
         >
           <div className="text-xs text-gray-500 mb-1">
             Click to toggle tags:

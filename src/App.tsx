@@ -12,12 +12,14 @@ function AppContent() {
     addTodo,
     addTag,
     toggleTagSelection,
+    handleTagDropOutside,
   } = useTodoContext();
 
   const [input, setInput] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
   const tagFormRef = useRef<HTMLFormElement>(null);
+  const appRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -27,24 +29,22 @@ function AppContent() {
         !tagFormRef.current.contains(event.target as Node)
       ) {
         setIsAddingTag(false);
-        setTagInput(""); // Clear input when closing
+        setTagInput("");
       }
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape" && isAddingTag) {
         setIsAddingTag(false);
-        setTagInput(""); // Clear input when closing
+        setTagInput("");
       }
     }
 
-    // Add event listener when tag form is open
     if (isAddingTag) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleKeyDown);
     }
 
-    // Clean up the event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
@@ -70,8 +70,26 @@ function AppContent() {
     setIsAddingTag(false);
   };
 
+  // Handle tag drops outside of todo cards (for removal)
+  const handleAppDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+
+    const tagName = e.dataTransfer.getData("text/plain");
+    const sourceId = e.dataTransfer.getData("application/tag-source");
+
+    // Only handle drops from todo cards (not from creation area)
+    if (tagName && sourceId && sourceId !== "creation-area") {
+      handleTagDropOutside(sourceId, tagName);
+    }
+  };
+
   return (
-    <div className="p-6 my-8">
+    <div
+      ref={appRef}
+      className="p-6 my-8"
+      onDrop={handleAppDrop}
+      onDragOver={(e) => e.preventDefault()}
+    >
       <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
         Work Management
       </h1>
@@ -96,7 +114,9 @@ function AppContent() {
 
         {/* Tag selection area */}
         <div>
-          <div className="text-sm text-gray-600 mb-2">Select tags:</div>
+          <div className="text-sm text-gray-600 mb-2">
+            Select tags (can be dragged to card):
+          </div>
           <div className="flex flex-wrap gap-4 items-center">
             {tags.map((tag) => (
               <TagChip
