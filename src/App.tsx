@@ -86,7 +86,7 @@ function AppContent() {
   return (
     <div
       ref={appRef}
-      className="p-6 my-8"
+      className="min-h-screen px-8 py-8"
       onDrop={handleAppDrop}
       onDragOver={(e) => e.preventDefault()}
     >
