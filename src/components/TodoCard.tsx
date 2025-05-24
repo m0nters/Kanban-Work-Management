@@ -186,6 +186,10 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
             setDragHandle(false);
             setIsDragging(false);
           }}
+          onMouseLeave={() => {
+            setDragHandle(false);
+            setIsDragging(false);
+          }}
           title="Drag to move"
         >
           <Bars3Icon className="h-5 w-5" />
