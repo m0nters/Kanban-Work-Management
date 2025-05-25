@@ -117,7 +117,7 @@ function AppContent() {
           <div className="text-sm text-gray-600 mb-2">
             Select tags (can be dragged to card):
           </div>
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
             {tags.map((tag) => (
               <TagChip
                 key={tag}

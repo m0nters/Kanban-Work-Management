@@ -32,8 +32,8 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
   // Drag State
   const [isDragging, setIsDragging] = useState(false);
   const [dragHandle, setDragHandle] = useState(false);
-  const [isCardHovering, setIsCardHovering] = useState(false); // Another todo card hovering
-  const [isTagHovering, setIsTagHovering] = useState(false); // A tag hovering
+  const [isCardHoveringOver, setIsCardHoveringOver] = useState(false); // Another todo card is hovering over it
+  const [isTagHoveringOver, setIsTagHoveringOver] = useState(false); // A tag hovering over it
 
   // Refs
   const tagSelectorRef = useRef<HTMLDivElement>(null);
@@ -96,20 +96,20 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
 
     if (draggedTag) {
       // A tag is being dragged - show green background
-      setIsTagHovering(true);
-      setIsCardHovering(false);
+      setIsTagHoveringOver(true);
+      setIsCardHoveringOver(false);
     } else {
       // A todo card is being dragged - show red background
-      setIsCardHovering(true);
-      setIsTagHovering(false);
+      setIsCardHoveringOver(true);
+      setIsTagHoveringOver(false);
     }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     // Only reset if we're actually leaving the card
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setIsCardHovering(false);
-      setIsTagHovering(false);
+      setIsCardHoveringOver(false);
+      setIsTagHoveringOver(false);
     }
   };
 
@@ -118,8 +118,8 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
     e.stopPropagation();
 
     // Reset hover states
-    setIsCardHovering(false);
-    setIsTagHovering(false);
+    setIsCardHoveringOver(false);
+    setIsTagHoveringOver(false);
 
     // Handle tag drops
     if (draggedTag) {
@@ -148,10 +148,10 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
 
   // Get background color based on drag state
   const getBackgroundColor = () => {
-    if (isTagHovering) {
+    if (isTagHoveringOver) {
       return "bg-green-100";
     }
-    if (isCardHovering) {
+    if (isCardHoveringOver) {
       return "bg-red-100";
     }
     return "bg-white";
@@ -169,7 +169,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`flex flex-col p-3 rounded-md shadow-sm border-l-4 transition-all
+      className={`flex flex-col p-3 rounded-md shadow-sm border-l-4 select-none transition-all
         hover:shadow-md ${getStatusColor()} ${getBackgroundColor()} ${
         isDragging ? "opacity-50 scale-95" : ""
       }`}
@@ -241,7 +241,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
       {todo.tags.length > 0 && !showTagSelector && (
         <div
           onDoubleClick={() => setShowTagSelector(true)}
-          className="flex flex-wrap gap-1 pl-8 mt-1 cursor-pointer select-none relative z-20"
+          className="flex flex-wrap gap-1 pl-8 mt-1 cursor-pointer relative z-20"
         >
           {todo.tags.map((tag) => (
             <TagChip
@@ -284,6 +284,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
                 isSelected={todo.tags.includes(tag)}
                 mode="toggle-only"
                 onClick={() => updateTodoTags(todo.id, tag)}
+                draggable={false}
               />
             ))}
           </div>

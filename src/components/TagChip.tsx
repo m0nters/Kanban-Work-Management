@@ -11,6 +11,7 @@ interface TagChipProps {
   mode?: TagChipMode;
   onClick?: () => void;
   todoId?: string; // For tags on todo cards - so we know which todo to remove from
+  draggable?: boolean;
 }
 
 const TagChip: React.FC<TagChipProps> = ({
@@ -19,6 +20,7 @@ const TagChip: React.FC<TagChipProps> = ({
   mode = "full", // Default is full functionality
   onClick,
   todoId,
+  draggable = true,
 }) => {
   const {
     deleteTag,
@@ -80,7 +82,7 @@ const TagChip: React.FC<TagChipProps> = ({
     return (
       <button
         onClick={onClick}
-        className="flex items-center bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded-full text-sm transition-colors cursor-pointer"
+        className="flex items-center bg-gray-200 border border-gray-300 hover:bg-gray-300 px-2 py-1 rounded-full text-sm transition-colors cursor-pointer"
       >
         <PlusIcon className="h-4 w-4 mr-1" />
         <span className="mr-2">{text}</span>
@@ -97,9 +99,12 @@ const TagChip: React.FC<TagChipProps> = ({
   // Determine if delete is allowed
   const canDelete = mode === "full";
 
+  // Determine if the tag can be dragged
+  const canDrag = draggable && !isEditing;
+
   return (
     <div
-      draggable={!isEditing}
+      draggable={canDrag}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={onClick}
