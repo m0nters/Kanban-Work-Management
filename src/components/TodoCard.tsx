@@ -79,6 +79,27 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
     }
   }, [isEditing]);
 
+  // Handle global mouse up to reset drag state
+  // this is for the to-do card shrink bug: when you click on the drag handle on
+  // the edge and mouse up, the to-do card is still in dragging state
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isMouseDown) {
+        setDragHandle(false);
+        setIsDragging(false);
+        setIsMouseDown(false);
+      }
+    };
+
+    if (isMouseDown) {
+      document.addEventListener("mouseup", handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mouseup", handleGlobalMouseUp);
+    };
+  }, [isMouseDown]);
+
   // Save edited text
   const saveEdit = () => {
     if (editText.trim() !== "") {
@@ -184,11 +205,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
             setIsDragging(true);
             setIsMouseDown(true);
           }}
-          onMouseUp={() => {
-            setDragHandle(false);
-            setIsDragging(false);
-            setIsMouseDown(false);
-          }}
+          // no `onMouseUp` for this div since we will handle it globally
           onMouseLeave={() => {
             // Only reset if mouse button is not pressed
             if (!isMouseDown) {
