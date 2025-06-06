@@ -32,6 +32,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
   // Drag State
   const [isDragging, setIsDragging] = useState(false);
   const [dragHandle, setDragHandle] = useState(false);
+  const [isMouseDown, setIsMouseDown] = useState(false);
   const [isCardHoveringOver, setIsCardHoveringOver] = useState(false); // Another todo card is hovering over it
   const [isTagHoveringOver, setIsTagHoveringOver] = useState(false); // A tag hovering over it
 
@@ -181,14 +182,19 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
           onMouseDown={() => {
             setDragHandle(true);
             setIsDragging(true);
+            setIsMouseDown(true);
           }}
           onMouseUp={() => {
             setDragHandle(false);
             setIsDragging(false);
+            setIsMouseDown(false);
           }}
           onMouseLeave={() => {
-            setDragHandle(false);
-            setIsDragging(false);
+            // Only reset if mouse button is not pressed
+            if (!isMouseDown) {
+              setDragHandle(false);
+              setIsDragging(false);
+            }
           }}
           title="Drag to move"
         >
