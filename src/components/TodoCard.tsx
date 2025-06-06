@@ -191,6 +191,14 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onMouseLeave={() => {
+        // Reset drag state when mouse leaves the entire card
+        if (isMouseDown) {
+          setDragHandle(false);
+          setIsDragging(false);
+          setIsMouseDown(false);
+        }
+      }}
       className={`flex flex-col p-3 rounded-md shadow-sm border-l-4 select-none transition-all
         hover:shadow-md ${getStatusColor()} ${getBackgroundColor()} ${
         isDragging ? "opacity-50 scale-95" : ""
