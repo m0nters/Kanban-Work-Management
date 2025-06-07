@@ -30,11 +30,9 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
   const [editText, setEditText] = useState(todo.text);
 
   // Drag State
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragHandle, setDragHandle] = useState(false);
-  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [isDragging, setIsDragging] = useState(false); // The (current) todo card is being dragged
   const [isCardHoveringOver, setIsCardHoveringOver] = useState(false); // Another todo card is hovering over it
-  const [isTagHoveringOver, setIsTagHoveringOver] = useState(false); // A tag hovering over it
+  const [isTagHoveringOver, setIsTagHoveringOver] = useState(false); // A tag is hovering over it
 
   // Refs
   const tagSelectorRef = useRef<HTMLDivElement>(null);
@@ -84,21 +82,17 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
   // the edge and mouse up, the to-do card is still in dragging state
   useEffect(() => {
     const handleGlobalMouseUp = () => {
-      if (isMouseDown) {
-        setDragHandle(false);
-        setIsDragging(false);
-        setIsMouseDown(false);
-      }
+      setIsDragging(false);
     };
 
-    if (isMouseDown) {
+    if (isDragging) {
       document.addEventListener("mouseup", handleGlobalMouseUp);
     }
 
     return () => {
       document.removeEventListener("mouseup", handleGlobalMouseUp);
     };
-  }, [isMouseDown]);
+  }, [isDragging]);
 
   // Save edited text
   const saveEdit = () => {
@@ -181,22 +175,19 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
 
   return (
     <div
-      draggable={dragHandle}
+      draggable={isDragging}
       onDragStart={() => handleDragStart(todo.id)}
       onDragEnd={() => {
         handleDragEnd();
         setIsDragging(false);
-        setDragHandle(false);
       }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onMouseLeave={() => {
         // Reset drag state when mouse leaves the entire card
-        if (isMouseDown) {
-          setDragHandle(false);
+        if (isDragging) {
           setIsDragging(false);
-          setIsMouseDown(false);
         }
       }}
       className={`flex flex-col p-3 rounded-md shadow-sm border-l-4 select-none transition-all
@@ -206,21 +197,11 @@ const TodoCard: React.FC<TodoCardProps> = ({ todo }) => {
     >
       {/* Card header content */}
       <div className="flex items-start mb-2">
+        {/* Drag handle */}
         <div
           className="pr-3 text-gray-500 cursor-move"
-          onMouseDown={() => {
-            setDragHandle(true);
-            setIsDragging(true);
-            setIsMouseDown(true);
-          }}
+          onMouseDown={() => setIsDragging(true)}
           // no `onMouseUp` for this div since we will handle it globally
-          onMouseLeave={() => {
-            // Only reset if mouse button is not pressed
-            if (!isMouseDown) {
-              setDragHandle(false);
-              setIsDragging(false);
-            }
-          }}
           title="Drag to move"
         >
           <Bars3Icon className="h-5 w-5" />

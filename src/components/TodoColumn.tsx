@@ -27,7 +27,7 @@ const TodoColumn: React.FC<TodoColumnProps> = ({ columnId, todos, title }) => {
     }
   };
 
-  const activeTodoId = activeCard !== null ? allTodos[activeCard].id : null;
+  const activeTodoId = allTodos[activeCard!]?.id;
 
   return (
     <div className="min-h-[200px]">
